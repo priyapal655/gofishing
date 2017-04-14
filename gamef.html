@@ -1,0 +1,205 @@
+<html>
+<head>
+    <title>Fishing </title>
+    <style type="text/css">
+    #myFishingGame {
+        border: 1px solid #d3d3d3;
+        background-image: url('sea.gif');
+        background-size: cover;
+        margin-left: 20px;
+    }
+    #bloc1{
+        float: left;
+        background-color: cyan;
+        font: bold;
+        font-size: 30;
+        width: 50%;
+        text-align: center;
+    
+    }
+    #bloc2{
+        float: left;
+        background-color: blue;
+        position: center;
+        text-align: center;;
+        font-size: 30;
+        font: bold;
+        width: 50%;
+
+    }
+    </style>
+</head>
+
+<body onload="startGame()">
+
+<div id="parent-div">
+    <div id="bloc1" class="child-div">
+        score:0
+    </div>
+
+    <div id="bloc2" class="child-div">
+       time left: 1:00
+    </div>
+</div>
+    <canvas id="myFishingGame" width="1200" height="550">
+    </canvas>
+    <script type="text/javascript" >
+    var myHero;
+    var fish;
+    var fishes = [];
+    var fishImages=new Array(6);
+    
+  
+    var fishCount =10;
+    var collisions=0;
+    var timeoutHandle;
+function countdown(minutes) {
+    var seconds = 60;
+    var mins = minutes
+    function tick() {
+        var counter = document.getElementById("bloc2");
+        var current_minutes = mins-1
+        seconds--;
+        counter.innerHTML ="time left:"+
+        current_minutes.toString() + ":" + (seconds < 10 ? "0" : "") + String(seconds);
+        if( seconds > 0 ) {
+            timeoutHandle=setTimeout(tick, 1000);
+        } else {
+
+            if(mins > 1){
+
+               // countdown(mins-1);   never reach “00″ issue solved:Contributed by Victor Streithorst
+               setTimeout(function () { countdown(mins - 1); }, 1000);
+
+            }
+        }
+    }
+    tick();
+}
+
+countdown(1);
+
+    var myGameArea = {
+        canvas: document.getElementById("myFishingGame"),
+        start: function() {
+            this.context = this.canvas.getContext("2d");
+            this.interval = setInterval(updateGameArea, 40);
+             window.addEventListener('keydown', function (e) {
+            myGameArea.key = e.keyCode;
+        })
+        window.addEventListener('keyup', function (e) {
+            myGameArea.key = false;
+        })
+    }, 
+    
+        clear: function() {
+            this.context.clearRect( 0, 0, this.canvas.width, this.canvas.height);
+        }
+    }
+
+    function updateGameArea() {
+        myGameArea.clear();
+        for (var i = 0; i < fishCount; i++) {
+            fishes[i].x=fishes[i].x+fishes[i].speed;
+            if(fishes[i].x>=myHero.x && fishes[i].x<=myHero.x+myHero.width && fishes[i].y>=myHero.y && fishes[i].y<=myHero.y+myHero.height){
+                fishes[i].x=Math.floor(Math.random()*200+1);
+            	collisions++;
+            	fishes[i].y=Math.floor(Math.random()*480+1);
+            	document.getElementById("bloc1").innerHTML="score:"+collisions;
+            }
+            fishes[i].update();
+        }
+        myHero.speedx=0;
+        myHero.speedy=0;
+        if (myGameArea.key && myGameArea.key == 37) {myHero.speedx = -15; }
+        if (myGameArea.key && myGameArea.key == 39) {myHero.speedx = 15; }
+        if (myGameArea.key && myGameArea.key == 38) {myHero.speedy = -15; }
+        if (myGameArea.key && myGameArea.key == 40) {myHero.speedy = 15; }
+        myHero.newPos();
+        myHero.update();
+
+
+    }
+    var startGame = function() {
+        myGameArea.start();
+       setTimeout(function(){alert("game started. you will have to eat as much fish as possible in 1 minute of time,go ahead ")},0000);
+        myHero = new component1(180, 80, "shark.png", 400, 120,"image");
+         for (var i = 0; i < fishCount; i++) {
+           var myRandomNo = Math.floor(Math.random()*200+1)
+            var RandomSpeed=Math.floor(Math.random()*20+1);
+            fishes.push(new component(50, 50, "fish10.png",i*20, myRandomNo,RandomSpeed,"image"));
+            fishes.push(new component(50, 50, "f2.gif",i*10, myRandomNo+50,RandomSpeed,"image"));
+            fishes.push(new component(50, 50, "f3.gif",i*25, myRandomNo+100,RandomSpeed,"image"));
+            fishes.push(new component(50, 50, "f4.gif",i*15, myRandomNo+200,RandomSpeed,"image"));
+            fishes.push(new component(50, 50, "f5.gif",i*5, myRandomNo+300,RandomSpeed,"image"));
+            fishes.push(new component(50, 50, "fish8.png",i*30, myRandomNo+250,RandomSpeed,"image"));
+        }
+
+       //
+
+        
+        }
+
+    function component(width, height, color, x, y,speed,type) {
+        this.type = type;
+    if (type == "image") {
+        this.image = new Image();
+        this.image.src = color;
+    }
+        this.width = width;
+        this.height = height;
+        this.x = x;
+        this.y = y;
+        
+        this.color = color;
+        this.speed=speed;
+        this.update = function() {
+            var ctx = myGameArea.context;
+            if (type == "image") {
+            ctx.drawImage(this.image, 
+                this.x, 
+                this.y,
+                this.width, this.height);
+        } else {
+            ctx.fillStyle = color;
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+        }
+    };
+    
+    }
+    function component1(width, height, color, x, y,type) {
+        this.type = type;
+    if (type == "image") {
+        this.image = new Image();
+        this.image.src = color;
+    }
+        this.width = width;
+        this.height = height;
+        this.x = x;
+        this.y = y;
+        this.speedx=0;
+        this.speedy=0;
+        this.color = color;
+        this.update = function() {
+            var ctx = myGameArea.context;
+            if (type == "image") {
+            ctx.drawImage(this.image, 
+                this.x, 
+                this.y,
+                this.width, this.height);
+        } else {
+            ctx.fillStyle = color;
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+        }
+    };
+    this.newPos = function() {
+        this.x += this.speedx;
+        this.y += this.speedy;        
+    }
+    }
+    </script>
+</body>
+
+</html>
+
+
